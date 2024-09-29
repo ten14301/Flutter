@@ -28,28 +28,33 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Storemenu> smenu = [
-    Storemenu("A1", 500, "assets/images/Store.png"),
-    Storemenu("B1", 500, "assets/images/Store.png")
-  ];
   List<ChooseStore> sStore = [];
 
-  void _addStore(String name, int price) {
+  void _addStore(String name, int price,bool isSelected) {
     setState(() {
-      sStore.add(ChooseStore(name, price));
-      for (var store in sStore) {
-        print("${store.name},${store.price}");
+
+    final item = ChooseStore(name, price);
+
+    if (isSelected) {
+
+      if (!sStore.any((store) => store.name == name && store.price == price)) {
+        sStore.add(item);
       }
+    } else {
+      sStore.removeWhere((store) => store.name == name && store.price == price);
+    }
     });
   }
-
+  TextEditingController dateControllerBefore = TextEditingController();
+  TextEditingController dateControllerAfter = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.all(35),
         child: Column(children: [
           Text(
@@ -169,9 +174,125 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
               ],
             ),
+          ),
+          const SizedBox(height: 15,),
+          TextField(
+              controller: dateControllerBefore,
+              decoration: const InputDecoration(
+                labelText: "กรุ่ณาเลือกวันที่เริ่มต้น",
+                filled: true,
+                prefixIcon: Icon(Icons.calendar_today),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide.none
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black)
+                ),
+              ),
+              readOnly: true,
+              onTap: () {
+                selectDateBefore();
+              },
+          ),
+          const SizedBox(height: 15,),
+          TextField(
+              controller: dateControllerAfter,
+              decoration: const InputDecoration(
+                labelText: "กรุ่ณาเลือกวันที่สุดท้าย",
+                filled: true,
+                prefixIcon: Icon(Icons.calendar_today),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide.none
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black)
+                ),
+              ),
+              readOnly: true,
+              onTap: () {
+                selectDateAfter();
+              },
+          ),
+          const SizedBox(height: 25,),
+          Container(
+            width: 150,
+            height: 50,
+            color: const Color.fromARGB(255, 255, 75, 62),
+            child: Center(
+            child: Text("ตกลง",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.notoSansThai(
+              textStyle: const TextStyle(
+                  color: Colors.black, 
+                  letterSpacing: .5, 
+                  fontSize: 20,
+
+            ),
+            )
+            ),
+            ),
+            
           )
         ]),
       ),
+      ),
     );
   }
+  //selectDateBefore
+  Future<void> selectDateBefore() async{
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(), 
+      lastDate: DateTime(2100)
+      );
+    if (picked != null){
+      setState(() {
+        dateControllerBefore.text = picked.toString().split(" ")[0];
+      });
+    }
+  }
+  //
+  Future<void> selectDateAfter() async{
+    DateTime ? dateBefore;
+    if(dateControllerBefore.text.isNotEmpty){
+       dateBefore = DateTime.parse(dateControllerBefore.text);
+    }
+
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(), 
+      lastDate: DateTime(2100)
+      );
+    if (picked != null){
+      if(dateBefore != null && picked.isBefore(dateBefore)){
+        if(mounted){
+        showDialog(
+        context: context, 
+        builder: (BuildContext context ){
+          return AlertDialog(
+            title: const Text("วันที่ของคุณไม่ถูกต้อง"),
+            content: const Text("วันที่สุดท้ายต้องมากกว่าหรือเท่ากับวันที่เริ่มต้น"),
+            actions: [
+              TextButton(
+                onPressed: (){
+                  Navigator.of(context).pop();
+                }, 
+                child: const Text("ตกลง"))
+            ],
+          );
+
+        });
+        }
+        
+      }
+      else{
+      setState(() {
+        dateControllerAfter.text = picked.toString().split(" ")[0];
+      });
+      }
+    }
+  }
+  //
 }
