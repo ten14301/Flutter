@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'storecontainer.dart';
+import 'payment.dart';
 import 'storemodel.dart';
 
 void main() {
@@ -214,7 +215,42 @@ class _MyHomePageState extends State<MyHomePage> {
               },
           ),
           const SizedBox(height: 25,),
-          Container(
+          GestureDetector(
+          onTap: (){
+              if (dateControllerBefore.text.isNotEmpty &&
+      dateControllerAfter.text.isNotEmpty &&
+      sStore.isNotEmpty){
+            Navigator.push(
+              context
+              , 
+              MaterialPageRoute(
+                builder: (context) => PaymentPage(
+                  selectedItem: sStore,
+                  startdate: dateControllerBefore.text,
+                  enddate: dateControllerAfter.text
+                )
+                )
+              );
+      }
+        else{
+          showDialog(
+            context: context, 
+            builder: (BuildContext context){
+              return AlertDialog(
+                title: const Text("ข้อมูลไม่ครบ"),
+                content: const Text("กรุณากรอกข้อมูลให้ครบถ้วน"),
+                actions: [
+                  TextButton(
+                    onPressed: (){
+                      Navigator.of(context).pop();
+                    }, 
+                    child: const Text("ตกลง"))
+                ],
+              );
+            });
+         }
+          },
+          child:Container(
             width: 150,
             height: 50,
             color: const Color.fromARGB(255, 255, 75, 62),
@@ -233,6 +269,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             
           )
+          ),
         ]),
       ),
       ),
